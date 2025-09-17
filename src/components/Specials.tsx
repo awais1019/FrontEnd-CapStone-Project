@@ -35,14 +35,14 @@ const Dishes = [
 
 export default function Specials() {
   return (
-    <section className="max-w-[1200px]  px-20 py-2 mx-auto flex flex-col gap-8">
+    <section className="max-w-[1200px] px-20 py-2 mx-auto flex flex-col gap-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">This Weeks Specials!</h2>
-        <button className="bg-amber-500 text-white px-4 py-2 rounded-lg">
+        <button className="bg-primary text-white px-4 py-2 rounded-lg">
           Online Menu
         </button>
       </div>
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-6">
         {Dishes.map((dish) => (
           <Card key={dish.name} {...dish} />
         ))}
@@ -62,16 +62,23 @@ function Card({
   price: string;
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-md h-[320px]  flex flex-col flex-1 min-w-[260px] max-w-[480px] overflow-hidden">
-      <img
-        className="w-full h-[150px] object-cover rounded-md"
-        src={image}
-        alt="Special Dish"
-      />
+    <div className="bg-black/3 rounded-lg shadow-md h-[300px]  flex flex-col flex-1 min-w-[260px] max-w-[480px] overflow-hidden">
+      <div className="w-full h-[150px] relative">
+        <img
+          className="object-cover w-full h-full rounded-md"
+          src={image}
+          alt="Special Dish"
+        />
+
+        <div className="absolute inset-0 bg-black/40 rounded-md"></div>
+      </div>
+
       <div className="px-4 py-2 flex flex-col gap-1">
-        <h3 className="text-lg font-semibold ">{name}</h3>
-        <p className="text-sm text-gray-600">{description}</p>
-        <span className="font-bold">{price}</span>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-bold ">{name}</h3>
+          <span className="font-bold text-primary">{price}</span>
+        </div>
+        <p className="text-sm text-black/60">{description}</p>
       </div>
     </div>
   );

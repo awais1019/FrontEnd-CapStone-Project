@@ -3,7 +3,7 @@ import Nav from "./Nav";
 
 export default function Header() {
   return (
-    <header className="flex items-center justify-between py-4 px-6 bg-white shadow-md sticky top-0 z-10">
+    <header className="hidden lg:block lg:flex lg:items-center lg:justify-between py-4 px-6 bg-white shadow-md lg:sticky lg:top-0 lg:z-10">
       <Logo />
       <Nav />
     </header>

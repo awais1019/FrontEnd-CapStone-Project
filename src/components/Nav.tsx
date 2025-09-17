@@ -26,7 +26,7 @@ function NavItem({ item }: NavItemProps) {
         className={({ isActive }) =>
           `transition ${
             isActive
-              ? "text-black border-b-2 border-black"
+              ? "text-secondary border-b-2 border-secondary pb-1"
               : "text-black/65 hover:text-black"
           }`
         }
