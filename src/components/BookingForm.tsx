@@ -6,28 +6,49 @@ import {
   FaClock,
 } from "react-icons/fa";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
-const timeOptions = ["17:00 pm", "18:00 pm", "19:00 pm", "20:00 pm", "21:00 pm", "22:00 pm"];
+import { useNavigate } from "react-router-dom";
 
-export default function BookingForm() {
+
+
+type Props={
+  time: string[];
+  dispatch: React.Dispatch<{ type: string; payload?: string }>;
+
+}
+
+export default function BookingForm({ time, dispatch }: Props) {
   const [locationStatus, setLocationStatus] = useState<
     "Indoor" | "Outdoor" | null
   >(null);
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState<number | undefined>(undefined);
   const [occasion, setOccasion] = useState("");
-  const [time, setTime] = useState("");
+
 
   const [isTimeOpen, setIsTimeOpen] = useState(false);
+  const [selectedTime, setTime] = useState("");
   const [isOccasionOpen, setIsOccasionOpen] = useState(false);
   const [isGuestsOpen, setIsGuestsOpen] = useState(false);
 
+
   const options = ["Birthday", "Anniversary"];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = { locationStatus, date, guests, occasion, time };
-    console.log("Form Submitted:", formData);
-  };
+ const navigate = useNavigate();
+
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!date || !selectedTime || !guests || !locationStatus) {
+    alert("Please complete all fields before submitting.");
+    return;
+  }
+
+  const formData = { locationStatus, date, guests, occasion, time: selectedTime };
+  const success = submitAPI(formData);
+  if (success) {
+    navigate("/confirmed");
+  }
+};
+
 
   return (
     <section className="h-[70vh] flex flex-col lg:px-60 py-7 px-4 bg-secondary/90 gap-4">
@@ -88,7 +109,12 @@ export default function BookingForm() {
                 id="res-date"
                 name="res-date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => {setDate(e.target.value)
+                  dispatch({
+                    type: "UPDATE_DATE",
+                    payload: e.target.value
+                  });
+                }}
                 className="border-2 border-gray-300 rounded pl-10 pr-2 py-3 bg-white/90 w-full"
               />
             </div>
@@ -109,8 +135,12 @@ export default function BookingForm() {
               >
                 <div className="flex gap-4 items-center">
                   <FaUsers />
-                  <span className="text-secondary font-bold text-lg">{guests ? `${guests} Diner${guests !== 1 ? "s" : ""}` : "No of Diner"}</span>
-                      </div>
+                  <span className="text-secondary font-bold text-lg">
+                    {guests
+                      ? `${guests} Diner${guests !== 1 ? "s" : ""}`
+                      : "No of Diner"}
+                  </span>
+                </div>
                 {isGuestsOpen ? (
                   <BsChevronUp className="text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" />
                 ) : (
@@ -155,7 +185,9 @@ export default function BookingForm() {
               >
                 <div className="flex items-center gap-5">
                   <FaBirthdayCake className="text-gray-500" />
-                  <span className="text-lg text-secondary">{occasion ? occasion : "Occasion"}</span>
+                  <span className="text-lg text-secondary">
+                    {occasion ? occasion : "Occasion"}
+                  </span>
                 </div>
                 {isOccasionOpen ? (
                   <BsChevronUp className="text-gray-500" />
@@ -200,9 +232,7 @@ export default function BookingForm() {
               >
                 <div className="flex items-center gap-5 px-4">
                   <FaClock />
-                  <span>
-                    {time ? time : "Select Time"}
-                  </span>
+                  <span>{selectedTime ? selectedTime : "Select Time"}</span>
                 </div>
 
                 {isTimeOpen ? (
@@ -213,10 +243,10 @@ export default function BookingForm() {
               </div>
               {isTimeOpen && (
                 <div className="absolute top-full flex flex-wrap justify-between items-center left-0 w-full bg-white border border-gray-300 rounded mt-1 z-10 shadow-lg">
-                  {timeOptions.map((opt) => (
+                  {time?.map((opt) => (
                     <div
                       key={opt}
-                      className="px-4 py-2 font-bold hover:bg-primary/20 cursor-pointer w-[50%] text-center"
+                      className="px-4 py-2  hover:bg-primary/20 cursor-pointer w-[50%] text-center"
                       onClick={() => {
                         setTime(opt);
                         setIsTimeOpen(false);
@@ -239,6 +269,10 @@ export default function BookingForm() {
           Reserve Now
         </button>
       </form>
+     
+
+ 
     </section>
+    
   );
 }
