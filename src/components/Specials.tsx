@@ -38,7 +38,7 @@ export default function Specials() {
     <section className="max-w-[1200px] px-20 py-2 mx-auto flex flex-col gap-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">This Weeks Specials!</h2>
-        <button className="bg-primary text-white px-4 py-2 rounded-lg">
+        <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/60 cursor-pointer transition">
           Online Menu
         </button>
       </div>

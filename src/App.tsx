@@ -1,8 +1,11 @@
 
 import { Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
-import ReservationPage from "./pages/ReservationPage";
-import HomePage from "./pages/HomePage";
+import { lazy} from "react";
+
+
+const HomePage = lazy(() => import("./pages/HomePage"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
 
 export default function App() {
   return (
@@ -10,7 +13,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route path="home" index element={<HomePage />} />
-           <Route path="reservations" element={<ReservationPage />} />
+           <Route path="reservations" element={<BookingPage />} />
 
         </Route>
       </Routes>
