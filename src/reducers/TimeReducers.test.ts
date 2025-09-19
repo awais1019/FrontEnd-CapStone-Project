@@ -1,12 +1,14 @@
 import { updateTimes, initialTime } from "./TimeReducers";
 import { getTodayDate, } from "../lib/utils";
 import { describe, test, expect } from "vitest";
+import { fetchAPI } from "../api";
+
 
 
 describe("timesReducer", () => {
   test("initialTime should return initialAvailableTimes", () => {
     const result = fetchAPI(new Date(getTodayDate()));
-    expect(result).toEqual(initialTime);
+    expect(result).toEqual(initialTime());
   });
 
   test("updateTimes should return initialAvailableTimes for UPDATE_DATE", () => {

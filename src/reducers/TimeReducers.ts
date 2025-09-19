@@ -1,3 +1,4 @@
+import { fetchAPI } from "../api";
 import { getTodayDate} from "../lib/utils";
 
 export function  updateTimes (state: string[], action: { type: string; payload?: string }) {

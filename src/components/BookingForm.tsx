@@ -7,48 +7,64 @@ import {
 } from "react-icons/fa";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
+import { submitAPI } from "../api";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-
-
-type Props={
+type Props = {
   time: string[];
   dispatch: React.Dispatch<{ type: string; payload?: string }>;
+};
 
-}
+const bookingSchema = z.object({
+locationStatus: z.enum(["Indoor", "Outdoor"]).refine((val) => val, {
+  message: "Location is required",
+}),
+  date: z.string().min(1, "Date is required"),
+  guests: z.number().min(1, "Please select number of diner"),
+  occasion: z.string().min(1, "Occasion is required"),
+  time: z.string().min(1, "Please select a time"),
+});
+
+type BookingFormData = z.infer<typeof bookingSchema>;
 
 export default function BookingForm({ time, dispatch }: Props) {
-  const [locationStatus, setLocationStatus] = useState<
-    "Indoor" | "Outdoor" | null
-  >(null);
-  const [date, setDate] = useState("");
-  const [guests, setGuests] = useState<number | undefined>(undefined);
-  const [occasion, setOccasion] = useState("");
-
-
   const [isTimeOpen, setIsTimeOpen] = useState(false);
-  const [selectedTime, setTime] = useState("");
   const [isOccasionOpen, setIsOccasionOpen] = useState(false);
   const [isGuestsOpen, setIsGuestsOpen] = useState(false);
 
-
   const options = ["Birthday", "Anniversary"];
+  const navigate = useNavigate();
 
- const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<BookingFormData>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+    locationStatus: undefined,
+    guests: undefined,
+    occasion: "",
+    time: "",
+    date: "",
+  },
+  });
 
-const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!date || !selectedTime || !guests || !locationStatus) {
-    alert("Please complete all fields before submitting.");
-    return;
-  }
 
-  const formData = { locationStatus, date, guests, occasion, time: selectedTime };
-  const success = submitAPI(formData);
-  if (success) {
-    navigate("/confirmed");
-  }
-};
+  const selectedGuests = watch("guests");
+  const selectedOccasion = watch("occasion");
+  const selectedTime = watch("time");
 
+  const onSubmit = (formData: BookingFormData) => {
+    const success = submitAPI(formData);
+    if (success) {
+      navigate("/confirmed");
+    }
+  };
 
   return (
     <section className="h-[70vh] flex flex-col lg:px-60 py-7 px-4 bg-secondary/90 gap-4">
@@ -57,49 +73,42 @@ const handleSubmit = (e: React.FormEvent) => {
       </h1>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {/* Indoor / Outdoor */}
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex items-center gap-2 w-full">
-            <label
-              htmlFor="indoor"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label htmlFor="indoor" className="font-medium text-white/80 text-lg">
               Indoor Setting
             </label>
             <input
-              type="checkbox"
+              type="radio"
               id="indoor"
-              name="indoor"
-              checked={locationStatus === "Indoor"}
-              onChange={() => setLocationStatus("Indoor")}
+              value="Indoor"
+              {...register("locationStatus")}
             />
           </div>
           <div className="flex items-center gap-2 w-full">
-            <label
-              htmlFor="outdoor"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label htmlFor="outdoor" className="font-medium text-white/80 text-lg">
               Outdoor Setting
             </label>
             <input
-              type="checkbox"
+              type="radio"
               id="outdoor"
-              name="outdoor"
-              checked={locationStatus === "Outdoor"}
-              onChange={() => setLocationStatus("Outdoor")}
+              value="Outdoor"
+              {...register("locationStatus")}
             />
           </div>
         </div>
+        {errors.locationStatus && (
+          <p className="text-red-500 text-sm">{errors.locationStatus.message}</p>
+        )}
+
 
         {/* Date + Guests */}
         <div className="flex flex-row items-center gap-8">
           {/* Date Input */}
           <div className="flex justify-between flex-row lg:flex-col w-full gap-2">
-            <label
-              htmlFor="res-date"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label htmlFor="res-date" className="font-medium text-white/80 text-lg">
               Date
             </label>
             <div className="relative w-full">
@@ -107,38 +116,41 @@ const handleSubmit = (e: React.FormEvent) => {
               <input
                 type="date"
                 id="res-date"
-                name="res-date"
-                value={date}
-                onChange={(e) => {setDate(e.target.value)
+                {...register("date")}
+                onChange={(e) => {
+                  setValue("date", e.target.value, { shouldValidate: true });
                   dispatch({
                     type: "UPDATE_DATE",
-                    payload: e.target.value
+                    payload: e.target.value,
                   });
                 }}
                 className="border-2 border-gray-300 rounded pl-10 pr-2 py-3 bg-white/90 w-full"
               />
             </div>
+            {errors.date && (
+              <p className="text-red-500 text-sm">{errors.date.message}</p>
+            )}
           </div>
 
           {/* Guests Input */}
           <div className="flex justify-between flex-row lg:flex-col w-full gap-2">
-            <label
-              htmlFor="guests"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label id="guests-label" className="font-medium text-white/80 text-lg cursor-pointer" 
+            onClick={() => setIsGuestsOpen((prev) => !prev)}>
               Number of Diners
             </label>
             <div className="relative w-full">
               <div
+              aria-labelledby="guests-label"
                 className="flex items-center justify-between border-2 border-gray-300 rounded px-4 py-3 bg-white/90 text-secondary font-bold cursor-pointer"
                 onClick={() => setIsGuestsOpen((prev) => !prev)}
+            
               >
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-4 items-center" id="guests">
                   <FaUsers />
                   <span className="text-secondary font-bold text-lg">
-                    {guests
-                      ? `${guests} Diner${guests !== 1 ? "s" : ""}`
-                      : "No of Diner"}
+                    {selectedGuests
+                      ? `${selectedGuests} Diner${selectedGuests > 1 ? "s" : ""}`
+                      : "No of Diners"}
                   </span>
                 </div>
                 {isGuestsOpen ? (
@@ -148,13 +160,13 @@ const handleSubmit = (e: React.FormEvent) => {
                 )}
               </div>
               {isGuestsOpen && (
-                <div className="absolute top-full left-0 flex justify-center flex-wrap bg-white border border-gray-300 rounded  z-10 shadow-lg">
+                <div className="absolute top-full left-0 flex justify-center flex-wrap bg-white border border-gray-300 rounded z-10 shadow-lg">
                   {[...Array(10)].map((_, i) => (
                     <div
                       key={i}
                       className="px-4 py-2 hover:bg-primary/20 w-[50%] text-secondary cursor-pointer text-center"
                       onClick={() => {
-                        setGuests(i + 1);
+                        setValue("guests", i + 1, { shouldValidate: true });
                         setIsGuestsOpen(false);
                       }}
                     >
@@ -164,6 +176,9 @@ const handleSubmit = (e: React.FormEvent) => {
                 </div>
               )}
             </div>
+            {errors.guests && (
+              <p className="text-red-500 text-sm">{errors.guests.message}</p>
+            )}
           </div>
         </div>
 
@@ -171,22 +186,20 @@ const handleSubmit = (e: React.FormEvent) => {
         <div className="flex flex-row items-center gap-8">
           {/* Occasion Select */}
           <div className="flex justify-between flex-row lg:flex-col w-full gap-2">
-            <label
-              htmlFor="occasion"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label id="occasion-label" className="font-medium text-white/80 text-lg cursor-pointer"
+            onClick={() => setIsOccasionOpen((prev) => !prev)}>
               Occasion
             </label>
             <div className="relative w-full">
-              {/* Select Box */}
               <div
-                className="flex items-center justify-between border-2 border-gray-300 bg-white rounded px-4 py-3  font-bold cursor-pointer"
+              aria-labelledby="occasion-label"
+                className="flex items-center justify-between border-2 border-gray-300 bg-white rounded px-4 py-3 font-bold cursor-pointer"
                 onClick={() => setIsOccasionOpen((prev) => !prev)}
               >
                 <div className="flex items-center gap-5">
                   <FaBirthdayCake className="text-gray-500" />
                   <span className="text-lg text-secondary">
-                    {occasion ? occasion : "Occasion"}
+                    {selectedOccasion || "Occasion"}
                   </span>
                 </div>
                 {isOccasionOpen ? (
@@ -196,15 +209,14 @@ const handleSubmit = (e: React.FormEvent) => {
                 )}
               </div>
 
-              {/* Dropdown List */}
               {isOccasionOpen && (
                 <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded mt-1 z-10 shadow-lg">
                   {options.map((opt) => (
                     <div
                       key={opt}
-                      className="px-4 py-2 hover:bg-primary/20  cursor-pointer"
+                      className="px-4 py-2 hover:bg-primary/20 cursor-pointer"
                       onClick={() => {
-                        setOccasion(opt);
+                        setValue("occasion", opt, { shouldValidate: true });
                         setIsOccasionOpen(false);
                       }}
                     >
@@ -214,25 +226,26 @@ const handleSubmit = (e: React.FormEvent) => {
                 </div>
               )}
             </div>
+            {errors.occasion && (
+              <p className="text-red-500 text-sm">{errors.occasion.message}</p>
+            )}
           </div>
 
           {/* Time Select */}
           <div className="flex justify-between flex-row lg:flex-col w-full gap-2">
-            <label
-              htmlFor="res-time"
-              className="font-medium text-white/80 text-lg"
-            >
+            <label id="res-time-label" className="font-medium text-white/80 text-lg cursor-pointer"
+            onClick={() => setIsTimeOpen((prev) => !prev)}>
               Time
             </label>
             <div className="relative w-full">
               <div
-                id="res-time"
+              aria-labelledby="res-time-label"
                 onClick={() => setIsTimeOpen((prev) => !prev)}
-                className="border-2 flex items-center justify-between border-gray-300 rounded  py-4 bg-white/90 text-secondary font-bold w-full"
+                className="border-2 flex items-center justify-between border-gray-300 rounded py-4 bg-white/90 text-secondary font-bold w-full"
               >
                 <div className="flex items-center gap-5 px-4">
                   <FaClock />
-                  <span>{selectedTime ? selectedTime : "Select Time"}</span>
+                  <span>{selectedTime || "Select Time"}</span>
                 </div>
 
                 {isTimeOpen ? (
@@ -246,9 +259,9 @@ const handleSubmit = (e: React.FormEvent) => {
                   {time?.map((opt) => (
                     <div
                       key={opt}
-                      className="px-4 py-2  hover:bg-primary/20 cursor-pointer w-[50%] text-center"
+                      className="px-4 py-2 hover:bg-primary/20 cursor-pointer w-[50%] text-center"
                       onClick={() => {
-                        setTime(opt);
+                        setValue("time", opt, { shouldValidate: true });
                         setIsTimeOpen(false);
                       }}
                     >
@@ -258,6 +271,9 @@ const handleSubmit = (e: React.FormEvent) => {
                 </div>
               )}
             </div>
+            {errors.time && (
+              <p className="text-red-500 text-sm">{errors.time.message}</p>
+            )}
           </div>
         </div>
 
@@ -269,10 +285,6 @@ const handleSubmit = (e: React.FormEvent) => {
           Reserve Now
         </button>
       </form>
-     
-
- 
     </section>
-    
   );
 }

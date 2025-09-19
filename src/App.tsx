@@ -3,10 +3,11 @@ import Layout from "./components/Layout";
 import { lazy, useReducer } from "react";
 
 import { initialTime, updateTimes } from "./reducers/TimeReducers";
-import ConfirmedBooking from "./components/ConfirmedBooking";
+
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const BookingPage = lazy(() => import("./pages/BookingPage"));
+const ConfirmedBooking=lazy(()=>import("./components/ConfirmedBooking"));
 
 export default function App() {
   const [availableTime, dispatch] = useReducer(updateTimes, [], initialTime);
